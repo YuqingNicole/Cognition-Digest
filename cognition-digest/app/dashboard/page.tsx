@@ -2,49 +2,21 @@
 
 import { useState } from "react"
 import { NavHeader } from "@/components/nav-header"
-import { SubscriptionCard } from "@/components/subscription-card"
+import { SubscriptionManager } from "@/components/subscription-manager"
+import { GenerateReportForm } from "@/components/generate-report-form"
 import { AddSourceDialog } from "@/components/add-source-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 
-const mockSubscriptions = [
-  {
-    id: "1",
-    channelTitle: "Lex Fridman Podcast",
-    channelImage: "/podcast-setup.png",
-    frequency: "weekly",
-    lastReport: "2024-03-15",
-    enabled: true,
-  },
-  {
-    id: "2",
-    channelTitle: "Fireship",
-    channelImage: "/interconnected-tech.png",
-    frequency: "each",
-    lastReport: "2024-03-14",
-    enabled: true,
-  },
-  {
-    id: "3",
-    channelTitle: "3Blue1Brown",
-    channelImage: "/math-symbols.png",
-    frequency: "monthly",
-    lastReport: "2024-03-01",
-    enabled: false,
-  },
-]
-
+/**
+ * Dashboard page demonstrating API integration:
+ * - SubscriptionManager: uses listSubscriptions, updateSubscription, deleteSubscription
+ * - GenerateReportForm: uses generateOneTimeReport
+ * - AddSourceDialog: uses parseYouTubeUrl, createSource
+ */
 export default function DashboardPage() {
-  const [subscriptions, setSubscriptions] = useState(mockSubscriptions)
   const [dialogOpen, setDialogOpen] = useState(false)
-
-  const handleToggle = (id: string) => {
-    setSubscriptions((prev) => prev.map((sub) => (sub.id === id ? { ...sub, enabled: !sub.enabled } : sub)))
-  }
-
-  const handleFrequencyChange = (id: string, frequency: string) => {
-    setSubscriptions((prev) => prev.map((sub) => (sub.id === id ? { ...sub, frequency } : sub)))
-  }
+  const [activeTab, setActiveTab] = useState<"subscriptions" | "generate">("subscriptions")
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,21 +24,46 @@ export default function DashboardPage() {
 
       <main className="mx-auto max-w-7xl px-6 py-12">
         <div className="mb-8">
-          <h1 className="text-xl font-bold text-foreground">Your Subscriptions</h1>
+          <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage your YouTube channel subscriptions and report frequency
+            Manage your subscriptions and generate reports
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {subscriptions.map((sub) => (
-            <SubscriptionCard
-              key={sub.id}
-              {...sub}
-              onToggle={() => handleToggle(sub.id)}
-              onFrequencyChange={(freq) => handleFrequencyChange(sub.id, freq)}
-            />
-          ))}
+        {/* Simple Tab Navigation */}
+        <div className="mb-6 border-b border-border">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab("subscriptions")}
+              className={`pb-3 px-1 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === "subscriptions"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Subscriptions
+            </button>
+            <button
+              onClick={() => setActiveTab("generate")}
+              className={`pb-3 px-1 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === "generate"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Generate Report
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {activeTab === "subscriptions" && <SubscriptionManager />}
+          {activeTab === "generate" && (
+            <div className="mx-auto max-w-2xl">
+              <GenerateReportForm />
+            </div>
+          )}
         </div>
       </main>
 

@@ -1,17 +1,27 @@
-// Placeholder middleware – add auth/redirect logic later
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 
-export default function middleware(_req: NextRequest) {
-  // e.g., read cookies/session and guard routes
+import { readTokenFromRequest, isTokenAuthorized } from "@/lib/auth"
+
+function unauthorizedResponse(req: NextRequest) {
+  if (req.nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+  }
+
+  const loginUrl = new URL("/onboarding", req.url)
+  loginUrl.searchParams.set("from", req.nextUrl.pathname)
+  return NextResponse.redirect(loginUrl)
+}
+
+export default function middleware(req: NextRequest) {
+  const token = readTokenFromRequest(req)
+  if (!isTokenAuthorized(token)) {
+    return unauthorizedResponse(req)
+  }
+
   return NextResponse.next()
 }
 
-// Configure matchers as needed later
 export const config = {
-  matcher: [
-    // "/dashboard",
-    // "/report/:path*",
-    // "/newsletter/:path*",
-  ],
+  matcher: ["/dashboard/:path*", "/report/:path*", "/newsletter/:path*", "/api/report/:path*"],
 }
